@@ -1,6 +1,6 @@
 {
   "name": "@pimbay/search-query",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Framework-agnostic, strict search/pagination contracts (page, slice, cursor) with no runtime magic — a foundation for datasource-specific extensions, starting with Drizzle.",
   "keywords": [
     "pagination",
