@@ -1,0 +1,30 @@
+services:
+  node22:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        NODE_VERSION: 22
+    working_dir: /app
+    volumes:
+      - .:/app
+
+  node24:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        NODE_VERSION: 24
+    working_dir: /app
+    volumes:
+      - .:/app
+
+  node26:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        NODE_VERSION: 26
+    working_dir: /app
+    volumes:
+      - .:/app

@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [contrib]
+  push:
+    branches: [contrib]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['22', '24', '26']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - run: npm install
+
+      - name: Audit runtime dependencies
+        if: matrix.node-version == '22'
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Lint
+        if: matrix.node-version == '22'
+        run: npm run js:lint
+
+      - name: Format check
+        if: matrix.node-version == '22'
+        run: npm run js:format
+
+      - name: Typecheck
+        run: npm run js:typecheck
+
+      - name: Build
+        run: npm run js:build
+
+      - name: Unit tests
+        if: matrix.node-version != '22'
+        run: npm run test:unit
+
+      - name: Unit tests with coverage
+        if: matrix.node-version == '22'
+        run: npm run test:coverage
+
+      - name: Mutation testing
+        if: matrix.node-version == '22'
+        run: npm run test:mutation
+
+  sync:
+    if: github.event_name == 'push'
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push contrib to Codeberg
+        run: |
+          git remote add codeberg https://oauth2:${{ secrets.CODEBERG_TOKEN }}@codeberg.org/pimbay-js/search-query.git
+          git fetch codeberg contrib:refs/remotes/codeberg/contrib || true
+          git push codeberg HEAD:contrib --force
