@@ -7,7 +7,7 @@
 
 ## Current focus
 
-Ongoing work is reconciling the two so the JS port mirrors the PHP library's public surface and behavior.
+Nothing in progress right now.
 
 ## Open questions
 
@@ -15,11 +15,11 @@ Ongoing work is reconciling the two so the JS port mirrors the PHP library's pub
 
 ## Known limitations / non-goals (for now)
 
-- No bundled datasource adapters beyond `InMemoryArrayAdapter` — datasource-specific adapters (e.g. Drizzle) ship as separate packages, not here.
+- None currently.
 
 ## Implementation notes
 
-- Node CI matrix is 22/24/26; Node 22 is the baseline version that alone runs lint/format/audit/coverage/mutation.
+- None currently.
 
 ## Ideas / future plans
 
