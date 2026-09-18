@@ -35,7 +35,7 @@ A bare command never mutates — only the `:fix` variant writes to disk.
 - **`readonly` fields** by default on classes; prefer immutable result objects over mutation.
 - **Named-constructor errors** — no inline `new SomeError(...)` beyond the trivial case; a `static <reason>(): self` per failure mode, private constructor.
 - **One class/concept per file**, barrel-exported from `src/index.ts`.
-- **Comments** only where non-obvious, always English. TSDoc only for shapes the compiler can't infer.
+- **Comments** only where they explain a non-trivial decision or _why_ — never restate _what_ the code already says. Don't comment obvious lines. Keep to 1-2 lines; more only for genuinely complex logic. Always in English.
 - **Markdown**: semantic linebreaks — break at sentence end, never inside a list item.
 - **Docs discipline**: no "Project Layout" in READMEs — the tree speaks for itself.
 
