@@ -62,10 +62,22 @@ Parses a search-terms input string into equals/notEquals/likes/notLikes buckets,
 ```ts
 import { createSearchTermsConfig, parseSearchTermsString } from '@pimbay/search-query';
 
-const config = createSearchTermsConfig(); // anywhere: true, minLength: 3, likeChar: '*', ignoreChar: '-'
-const parsed = parseSearchTermsString('foo* -bar baz*', config);
-// { equals: ['baz*']... } — see the type for the exact shape
+const config = createSearchTermsConfig();
+const parsed = parseSearchTermsString('dog hors* -cow', config);
+
+parsed.equals; // ['dog']
+parsed.likes; // ['hors*']
+parsed.notEquals; // ['cow']
 ```
+
+`createSearchTermsConfig` validates its markers (non-empty, unique, the two sets disjoint) and throws `SearchQueryError.invalidSearchTermsConfig()` on a bad combination.
+
+| Option          | Default      | Notes                                                                                                                                                                          |
+| :-------------- | :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `anywhere`      | `true`       | Pass-through hint only — this package never reads it; a datasource package decides what it means for its own `LIKE` pattern.                                                   |
+| `minLength`     | `3`          | Measured on the raw term, so a negation marker counts towards it: `-ab` needs `minLength <= 3`.                                                                                |
+| `likeMarkers`   | `['*']`      | Markers a term may embed to become a wildcard match; every one of them maps to the same wildcard. `[]` disables wildcards.                                                     |
+| `ignoreMarkers` | `['-', '!']` | Markers a term may start with to become a negation. Longest first wins, so `--` beats `-`. `[]` disables negation, which is what data with legitimately leading `-`/`!` needs. |
 
 Full usage reference (real-datasource example, advanced usage, edge cases): **[docs/usage.md](docs/usage.md)**.
 
@@ -100,6 +112,12 @@ npm run test:mutation  # stryker run — min MSI 100%
 
 `npm install` is sufficient — no external services to start first.
 
+| Node   | Status |
+| :----- | :----- |
+| **22** | ✅     |
+| **24** | ✅     |
+| **26** | ✅     |
+
 ## Development Helpers
 
 ```bash
@@ -115,6 +133,13 @@ npm run js:typecheck  # tsc --noEmit
 - **[docs/context.md](docs/context.md)** — current working state: what's in progress, what's next.
 - **[docs/DECISIONS.md](docs/DECISIONS.md)** — why things are built the way they are, in the order the decisions were made.
 - **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — version history.
+
+## Packages in the stack
+
+| Package                        | Description                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `@pimbay/search-query`         | This package — framework-agnostic pagination and search-terms parsing, no ORM dependency. |
+| `@pimbay/search-query-drizzle` | Drizzle ORM adapters and a search-terms-to-SQL condition builder built on this package.   |
 
 ## License
 
