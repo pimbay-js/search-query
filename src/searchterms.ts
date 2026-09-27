@@ -34,6 +34,8 @@ export interface SearchTermsConfig {
   readonly likeMarkers: readonly string[];
   /** every entry is an alias for negation; empty disables negation */
   readonly ignoreMarkers: readonly string[];
+  /** pass-through hint: whether a negated term also keeps records whose value is NULL */
+  readonly ignoredTermsMatchNull: boolean;
 }
 
 /** Applies defaults, then normalizes and validates. */
@@ -43,6 +45,7 @@ export function createSearchTermsConfig(overrides: Partial<SearchTermsConfig> = 
     minLength: 3,
     likeMarkers: ['*'],
     ignoreMarkers: ['-', '!'],
+    ignoredTermsMatchNull: true,
     ...overrides,
   };
 

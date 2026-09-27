@@ -72,12 +72,13 @@ parsed.notEquals; // ['cow']
 
 `createSearchTermsConfig` validates its markers (non-empty, unique, the two sets disjoint) and throws `SearchQueryError.invalidSearchTermsConfig()` on a bad combination.
 
-| Option          | Default      | Notes                                                                                                                                                                          |
-| :-------------- | :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `anywhere`      | `true`       | Pass-through hint only — this package never reads it; a datasource package decides what it means for its own `LIKE` pattern.                                                   |
-| `minLength`     | `3`          | Measured on the raw term, so a negation marker counts towards it: `-ab` needs `minLength <= 3`.                                                                                |
-| `likeMarkers`   | `['*']`      | Markers a term may embed to become a wildcard match; every one of them maps to the same wildcard. `[]` disables wildcards.                                                     |
-| `ignoreMarkers` | `['-', '!']` | Markers a term may start with to become a negation. Longest first wins, so `--` beats `-`. `[]` disables negation, which is what data with legitimately leading `-`/`!` needs. |
+| Option                  | Default      | Notes                                                                                                                                                                                                                                                                       |
+| :---------------------- | :----------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `anywhere`              | `true`       | Pass-through hint only — this package never reads it; a datasource package decides what it means for its own `LIKE` pattern.                                                                                                                                                |
+| `minLength`             | `3`          | Measured on the raw term, so a negation marker counts towards it: `-ab` needs `minLength <= 3`.                                                                                                                                                                             |
+| `likeMarkers`           | `['*']`      | Markers a term may embed to become a wildcard match; every one of them maps to the same wildcard. `[]` disables wildcards.                                                                                                                                                  |
+| `ignoreMarkers`         | `['-', '!']` | Markers a term may start with to become a negation. Longest first wins, so `--` beats `-`. `[]` disables negation, which is what data with legitimately leading `-`/`!` needs.                                                                                              |
+| `ignoredTermsMatchNull` | `true`       | Pass-through hint only, like `anywhere`. Whether a negated term should also keep records whose value is absent: `-red` means "not red", and under SQL's three-valued logic a bare `value != 'red'` drops every `NULL` row silently. `false` restores that stricter reading. |
 
 Full usage reference (real-datasource example, advanced usage, edge cases): **[docs/usage.md](docs/usage.md)**.
 

@@ -31,7 +31,13 @@ describe('ParsedSearchTerms', () => {
 });
 
 describe('createSearchTermsConfig', () => {
-  const defaults = { anywhere: true, minLength: 3, likeMarkers: ['*'], ignoreMarkers: ['-', '!'] };
+  const defaults = {
+    anywhere: true,
+    minLength: 3,
+    likeMarkers: ['*'],
+    ignoreMarkers: ['-', '!'],
+    ignoredTermsMatchNull: true,
+  };
 
   it.each([
     ['no overrides', {}, defaults],
