@@ -76,6 +76,12 @@ jobs:
             exit 0
           fi
 
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "NPM_TOKEN secret is not set — cannot publish to npm" >&2
+            exit 1
+          fi
+
+          npm config set "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}"
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
