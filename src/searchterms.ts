@@ -28,33 +28,52 @@ export class ParsedSearchTerms {
 export interface SearchTermsConfig {
   /** pass-through hint for a datasource-specific package's query builder */
   readonly anywhere: boolean;
-  /** counts the ignoreChar marker too, e.g. `-ab` needs minLength <= 3 */
+  /** counts the negation marker too, e.g. `-ab` needs minLength <= 3 */
   readonly minLength: number;
-  readonly likeChar: string;
-  readonly ignoreChar: string;
+  /** every entry is an alias for the same wildcard; empty disables wildcards */
+  readonly likeMarkers: readonly string[];
+  /** every entry is an alias for negation; empty disables negation */
+  readonly ignoreMarkers: readonly string[];
 }
 
-/** Applies defaults, then validates. */
+/** Applies defaults, then normalizes and validates. */
 export function createSearchTermsConfig(overrides: Partial<SearchTermsConfig> = {}): SearchTermsConfig {
-  const config: SearchTermsConfig = { anywhere: true, minLength: 3, likeChar: '*', ignoreChar: '-', ...overrides };
+  const merged: SearchTermsConfig = {
+    anywhere: true,
+    minLength: 3,
+    likeMarkers: ['*'],
+    ignoreMarkers: ['-', '!'],
+    ...overrides,
+  };
 
-  if (config.likeChar === '') {
-    throw SearchQueryError.invalidSearchTermsConfig('likeChar must not be empty');
+  const likeMarkers = normalizeMarkers(merged.likeMarkers, 'likeMarkers');
+  const ignoreMarkers = normalizeMarkers(merged.ignoreMarkers, 'ignoreMarkers');
+
+  if (likeMarkers.some((marker) => ignoreMarkers.includes(marker))) {
+    throw SearchQueryError.invalidSearchTermsConfig('likeMarkers and ignoreMarkers must not overlap');
   }
 
-  if (config.ignoreChar === '') {
-    throw SearchQueryError.invalidSearchTermsConfig('ignoreChar must not be empty');
-  }
-
-  if (config.likeChar === config.ignoreChar) {
-    throw SearchQueryError.invalidSearchTermsConfig('likeChar and ignoreChar must differ');
-  }
-
-  if (config.minLength < 0) {
+  if (merged.minLength < 0) {
     throw SearchQueryError.invalidSearchTermsConfig('minLength must be zero or greater');
   }
 
-  return config;
+  return { ...merged, likeMarkers, ignoreMarkers };
+}
+
+/**
+ * Longest first, so that a marker which is a prefix of another one (`-` next to `--`) never
+ * shadows it — matching would otherwise depend on the order the caller happened to pass.
+ */
+function normalizeMarkers(markers: readonly string[], name: string): readonly string[] {
+  if (markers.includes('')) {
+    throw SearchQueryError.invalidSearchTermsConfig(`${name} must not contain an empty marker`);
+  }
+
+  if (new Set(markers).size !== markers.length) {
+    throw SearchQueryError.invalidSearchTermsConfig(`${name} must not contain duplicates`);
+  }
+
+  return [...markers].sort((a, b) => b.length - a.length);
 }
 
 /**
@@ -72,14 +91,15 @@ export function parseSearchTerms(terms: readonly string[], config: SearchTermsCo
       continue;
     }
 
-    const negated = value.startsWith(config.ignoreChar);
-    const body = negated ? value.slice(config.ignoreChar.length) : value;
+    const marker = config.ignoreMarkers.find((candidate) => value.startsWith(candidate));
+    const negated = marker !== undefined;
+    const body = marker === undefined ? value : value.slice(marker.length);
 
     if (body === '') {
       continue;
     }
 
-    const isLike = body.includes(config.likeChar);
+    const isLike = config.likeMarkers.some((candidate) => body.includes(candidate));
 
     if (negated && isLike) {
       notLikes.push(body);
