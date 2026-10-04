@@ -48,6 +48,10 @@ jobs:
       - name: Build
         run: npm run js:build
 
+      - name: Manifest validation
+        if: matrix.node-version == '22'
+        run: npx --yes publint@0.3.25 --strict
+
       - name: Unit tests
         if: matrix.node-version != '22'
         run: npm run test:unit
